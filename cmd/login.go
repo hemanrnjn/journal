@@ -1,13 +1,15 @@
 package cmd
 
 import (
-  	"fmt"
-  	"github.com/spf13/cobra"
-  	"bufio"
+	"bufio"
+	"fmt"
 	"os"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
-	"crypto/md5"
 )
 
 var LoggedInUser string
@@ -20,15 +22,35 @@ var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Logs in an existing user",
 	Run: func(cmd *cobra.Command, args []string) {
-		username, password := credentials()
-		if _, err := os.Stat(".registeredUsers"); err == nil {
-			content, err := ioutil.ReadFile(".registeredUsers")
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Printf("File contents: %s", content)
-		}
+		login()
 	},
+}
+
+func login() {
+	if _, err := os.Stat(".registeredUsers"); err == nil {
+		passphrase := "ambitionjournal123"
+		decryptedData := string(decryptFile(".registeredUsers", passphrase))
+		scanner := bufio.NewScanner(strings.NewReader(decryptedData))
+		for scanner.Scan() {
+			text := scanner.Text()
+			for {
+				username, password := credentials()
+				if strings.Index(text, username) != -1 {
+					if strings.Split(text, ":")[1] == password {
+						LoggedInUser = username
+						log.Info("Login Successful! Welcome ", LoggedInUser)
+						break
+					} else {
+						log.Info("Incorrect Password, Try again")
+					}
+				}
+			}
+		}
+
+	} else {
+		log.Info("User does not exist. Register First!")
+		register()
+	}
 }
 
 func credentials() (string, string) {
@@ -38,8 +60,9 @@ func credentials() (string, string) {
 	username, _ := reader.ReadString('\n')
 
 	fmt.Print("Enter Password: ")
-	bytePassword, err := terminal.ReadPassword(0)
+	bytePassword, _ := terminal.ReadPassword(0)
+	fmt.Print("\n")
 	password := string(bytePassword)
 
-	return strings.TrimSpace(username), strings.TrimSpace(password)
+	return strings.Trim(username, " \n"), strings.TrimSpace(password)
 }
