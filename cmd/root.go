@@ -14,7 +14,7 @@ var rootCmd = &cobra.Command{
 	Use:   "journal",
 	Short: "Personal Journal CLI App",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Welcome to you personal journal \nEnter from the options below: \n \n 1. Login \n 2. Register \n")
+		fmt.Println("Welcome to your personal journal! \n\nEnter from the options below: \n\n1. Login \n2. Register\n")
 		reader := bufio.NewReader(os.Stdin)
 		choice, err := reader.ReadString('\n')
 		if err != nil {

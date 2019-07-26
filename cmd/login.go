@@ -31,6 +31,7 @@ func login() {
 		passphrase := "ambitionjournal123"
 		decryptedData := string(decryptFile(".registeredUsers", passphrase))
 		scanner := bufio.NewScanner(strings.NewReader(decryptedData))
+	outer:
 		for scanner.Scan() {
 			text := scanner.Text()
 			for {
@@ -39,14 +40,14 @@ func login() {
 					if strings.Split(text, ":")[1] == password {
 						LoggedInUser = username
 						log.Info("Login Successful! Welcome ", LoggedInUser)
-						break
+						break outer
 					} else {
 						log.Info("Incorrect Password, Try again")
 					}
 				}
 			}
 		}
-
+		journal()
 	} else {
 		log.Info("User does not exist. Register First!")
 		register()
