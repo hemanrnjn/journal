@@ -44,13 +44,15 @@ func login() {
 					} else {
 						log.Info("Incorrect Password, Try again")
 					}
+				} else {
+					log.Info("Invalid Username")
 				}
 			}
 		}
 		journal()
 	} else {
-		log.Info("User does not exist. Register First!")
-		register()
+		log.Info("No User exists. Register First!")
+		landing()
 	}
 }
 

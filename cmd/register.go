@@ -26,35 +26,36 @@ var registerCmd = &cobra.Command{
 func register() {
 	if _, err := os.Stat(".registeredUsers"); err == nil {
 		decryptedData := string(decryptFile(".registeredUsers", passphrase))
-		fmt.Println("Number of new lines: ", strings.Count(decryptedData, "\n"))
 		if strings.Count(decryptedData, "\n") >= 10 {
 			log.Fatal("Max users limit [10 users] reached!")
 		}
 
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter Username: ")
-		username, _ := reader.ReadString('\n')
-		username = strings.Trim(username, "\n")
+		for {
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Print("Enter Username: ")
+			username, _ := reader.ReadString('\n')
+			username = strings.Trim(username, "\n")
 
-		if strings.Contains(decryptedData, username) {
-			log.Info("User with this username already exists")
+			if strings.Contains(decryptedData, username) {
+				log.Info("User with this username already exists")
+				continue
+			}
+
+			fmt.Print("Enter Password: ")
+			bytePassword, _ := terminal.ReadPassword(0)
+			password := string(bytePassword)
+			fmt.Println("")
+
+			newData := decryptedData + username + ":" + password + "\n"
+
+			encryptFile(".registeredUsers", []byte(newData), passphrase)
+			if _, err := os.Stat("." + username); os.IsNotExist(err) {
+				os.Mkdir("."+username, os.ModePerm)
+			}
+			log.Info("User Registered")
+			LoggedInUser = username
+			break
 		}
-
-		fmt.Print("Enter Password: ")
-		bytePassword, _ := terminal.ReadPassword(0)
-		password := string(bytePassword)
-		fmt.Println("")
-
-		newData := decryptedData + username + ":" + password + "\n"
-
-		encryptFile(".registeredUsers", []byte(newData), passphrase)
-		if _, err := os.Stat("." + username); os.IsNotExist(err) {
-			os.Mkdir("."+username, os.ModePerm)
-		}
-		log.Info("User Registered")
-		LoggedInUser = username
-		journal()
-
 	} else {
 		username, password := credentials()
 		fmt.Println("")
@@ -66,6 +67,6 @@ func register() {
 		}
 		log.Info("User Registered")
 		LoggedInUser = username
-		journal()
 	}
+	journal()
 }
