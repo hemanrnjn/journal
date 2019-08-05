@@ -36,7 +36,7 @@ func login() {
 			text := scanner.Text()
 			for {
 				username, password := credentials()
-				if strings.Index(text, username) != -1 {
+				if strings.Index(text, username+":") != -1 {
 					if strings.Split(text, ":")[1] == password {
 						LoggedInUser = username
 						log.Info("Login Successful! Welcome ", LoggedInUser)
